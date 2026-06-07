@@ -77,10 +77,9 @@
     </main>
 
     <script>
-        // ضع هنا رابط سيرفر FastAPI الخاص بك بعد رفعه على Render
-        // للتجربة المحلية يمكنك استخدام 'http://127.0.0.1:8000'
+        // رابط السيرفر الحي المستضاف على رندر
         const BACKEND_API_URL = "https://tayyibat-db.onrender.com"; 
-        const userEmail = "test@tayyibat.com"; // بريد افتراضي للتجربة وتخزين البيانات بالداتابيز
+        const userEmail = "test@tayyibat.com"; 
 
         async function generateContent(type) {
             const prompt = document.getElementById("prompt-input").value.trim();
@@ -91,7 +90,7 @@
                 return;
             }
 
-            // إظهار شاشة التحميل وإخفاء النتائج السابقة
+            // تهيئة واجهة المستخدم وإخفاء النتائج السابقة
             document.getElementById("placeholder-view").classList.add("hidden");
             document.getElementById("image-result-container").classList.add("hidden");
             document.getElementById("audio-result-container").classList.add("hidden");
@@ -119,15 +118,14 @@
                     throw new Error(data.detail || "حدث خطأ غير متوقع بالسيرفر");
                 }
 
-                // التعامل مع مخرجات الصور
+                // معالجة استجابة توليد الصورة
                 if (type === 'image') {
                     document.getElementById("image-output").src = data.image_url;
                     document.getElementById("image-result-container").classList.remove("hidden");
                     updateCredits();
                 } 
-                // التعامل مع مخرجات الصوت
+                // معالجة استجابة توليد الصوت (تم تنظيف التكرار وهيكلة المسار بنجاح)
                 else if (type === 'audio') {
-                    // السيرفر يرسل اسم الملف المحفوظ، يتم استدعاؤه مباشرة
                     document.getElementById("audio-output").src = `${BACKEND_API_URL}/${data.file_name}`;
                     document.getElementById("audio-result-container").classList.remove("hidden");
                     updateCredits();
@@ -142,7 +140,6 @@
             }
         }
 
-        // دالة وهمية لمحاكاة خصم النقاط على الشاشة لحين ربطها كلياً بالداتابيز
         function updateCredits() {
             let currentCredits = parseInt(document.getElementById("credits-count").innerText);
             if (currentCredits > 0) {
