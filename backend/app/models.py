@@ -1,6 +1,9 @@
 import uuid
-from sqlalchemy import Column, String, Boolean, Integer, DateTime
+
+from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.database import Base
 
 
@@ -16,24 +19,33 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
+    scripts = relationship("Script", back_populates="user", cascade="all, delete-orphan")
+    audios = relationship("Audio", back_populates="user", cascade="all, delete-orphan")
+
 
 class Project(Base):
     __tablename__ = "projects"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String, nullable=False)
     type = Column(String, default="SCRIPT")
     status = Column(String, default="DRAFT")
     description = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    user = relationship("User", back_populates="projects")
+    scripts = relationship("Script", back_populates="project", cascade="all, delete-orphan")
+    audios = relationship("Audio", back_populates="project", cascade="all, delete-orphan")
+
+
 class Script(Base):
     __tablename__ = "scripts"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    project_id = Column(String, nullable=False, index=True)
-    user_id = Column(String, nullable=False, index=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String, nullable=False)
     hook = Column(String, nullable=False)
     content = Column(String, nullable=False)
@@ -41,16 +53,25 @@ class Script(Base):
     hashtags = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    project = relationship("Project", back_populates="scripts")
+    user = relationship("User", back_populates="scripts")
+    audios = relationship("Audio", back_populates="script")
+
+
 class Audio(Base):
     __tablename__ = "audios"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    project_id = Column(String, nullable=False, index=True)
-    user_id = Column(String, nullable=False, index=True)
-    script_id = Column(String, nullable=True, index=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    script_id = Column(String, ForeignKey("scripts.id"), nullable=True, index=True)
     text = Column(String, nullable=False)
     voice_name = Column(String, default="arabic_default")
     audio_url = Column(String, nullable=False)
     credits_used = Column(Integer, default=1)
     duration_seconds = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    project = relationship("Project", back_populates="audios")
+    user = relationship("User", back_populates="audios")
+    script = relationship("Script", back_populates="audios")
