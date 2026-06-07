@@ -96,7 +96,7 @@ def translate_to_english(text):
     return "cinematic fantasy landscape, ancient alchemy lab, masterpiece, 4k"
 
 
-# دالة معالجة سحب وتحميل الصورة الفنية من SiliconFlow محلياً داخل السيرفر
+# دالة تحميل الصورة الفنية المحسنة والمؤمنة ضد انقطاع الخدمة أو انتهاء الرصيد
 def download_ai_image(prompt, filename):
     url = "https://api.siliconflow.cn/v1/images/generations"
     headers = {
@@ -109,18 +109,38 @@ def download_ai_image(prompt, filename):
     payload = {
         "model": "black-forest-labs/FLUX.1-schnell",
         "prompt": f"{english_prompt}, cinematic lighting, masterpiece, 4k, hyper-detailed",
-        "image_size": "768x1344",  # الأبعاد المثالية لفيديوهات الشورتس والريلز
+        "image_size": "768x1344",
     }
+    
+    # المحاولة الأولى: طلب الصورة من SiliconFlow بمهلة ممتدة لـ 40 ثانية كاملة
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=25)
+        print("🎨 جاري طلب الصورة الفنية من سيرفر SiliconFlow...")
+        response = requests.post(url, json=payload, headers=headers, timeout=40)
+        
         if response.status_code == 200:
             img_url = response.json()["data"][0]["url"]
-            img_data = requests.get(img_url, timeout=15).content
+            img_data = requests.get(img_url, timeout=30).content
             with open(filename, "wb") as handler:
                 handler.write(img_data)
+            print("✅ تم تحميل الصورة الأصلية من الموديل بنجاح بنسبة 100%")
             return True
+        else:
+            print(f"⚠️ سيرفر SiliconFlow رد بكود خطأ: {response.status_code} - {response.text}")
+            
     except Exception as e:
-        print(f"خطأ أثناء طلب الصورة: {e}")
+        print(f"❌ خطأ شبكة أو انتهاء مهلة أثناء طلب الصورة: {e}")
+        
+    # خطة الإنقاذ البديلة (Fallback): سحب لوحة سينمائية مذهلة ومناسبة لجو المنصة لضمان عدم تعطل المونتاج
+    try:
+        print("🔮 تفعيل خطة الإنقاذ البديلة: جاري معالجة صورة سينمائية جاهزة وعالية الجودة...")
+        fallback_image_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=768&auto=format&fit=crop"
+        img_data = requests.get(fallback_image_url, timeout=15).content
+        with open(filename, "wb") as handler:
+            handler.write(img_data)
+        return True
+    except Exception as fallback_error:
+        print(f"فشلت خطة الإنقاذ البديلة أيضاً: {fallback_error}")
+        
     return False
 
 
@@ -151,7 +171,7 @@ async def register_user(user: UserRegister):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --- 2. API توليد الصوت المجاني وحفظه في السيرفر ---
+# --- 2. API توليد الصوت وحفظه في السيرفر ---
 @app.post("/api/generate-audio/")
 async def generate_audio(request: ContentRequest):
     file_id = request.email.split("@")[0]
@@ -241,26 +261,26 @@ async def generate_video(request: ContentRequest):
         communicate = edge_tts.Communicate(request.prompt, request.voice_name)
         await communicate.save(temp_audio)
 
-        # ب. إنتاج وحفظ اللوحة الفنية الخلفية للسيرفر
+        # ب. إنتاج وحفظ اللوحة الفنية الخلفية للسيرفر (مزودة بخطة الطوارئ لحماية التوليد)
         if not download_ai_image(request.prompt, temp_image):
             raise HTTPException(
                 status_code=500,
-                detail="فشل توليد المقطع المرئي من سيرفر الصور",
+                detail="فشل نظام معالجة الصور بالكامل، تعذر استرداد أصول مرئية",
             )
 
-        # ج. تنفيذ عمليات المونتاج الصوتي والمرئي الآمن والمنسق لبيئة رندر
+        # ج. تنفيذ عمليات المونتاج الصوتي وتركيب المشهد بأسلوب متوافق مع رندر
         audio_clip = AudioFileClip(temp_audio)
         video_duration = audio_clip.duration
 
         video_clip = ImageClip(temp_image).set_duration(video_duration)
         final_video = video_clip.set_audio(audio_clip)
 
-        # رندر وتصدير ملف الـ mp4 بجودة معالجة ممتازة وخفيفة
+        # رندر وتصدير ملف الـ mp4 بجودة معالجة ممتازة وخفيفة لضمان ثبات بيئة الاستضافة
         final_video.write_videofile(
             output_video, fps=24, codec="libx264", audio_codec="aac", logger=None
         )
 
-        # تحرير الذاكرة العشوائية فوراً
+        # تحرير الذاكرة العشوائية فوراً لحماية الرام المجانية في رندر
         audio_clip.close()
         video_clip.close()
         final_video.close()
