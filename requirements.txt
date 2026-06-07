@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-psycopg2-binary
-pydantic
-requests
-edge-tts
-moviepy==1.0.3
-Pillow
