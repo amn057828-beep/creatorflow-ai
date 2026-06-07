@@ -27,3 +27,16 @@ class Project(Base):
     status = Column(String, default="DRAFT")
     description = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Script(Base):
+    __tablename__ = "scripts"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=False)
+    hook = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    language = Column(String, default="ar")
+    hashtags = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
