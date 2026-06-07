@@ -60,3 +60,22 @@ class ScriptResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class VoiceGenerateRequest(BaseModel):
+    project_id: str
+    script_id: Optional[str] = None
+    text: str
+    voice_name: str = "arabic_default"
+
+class AudioResponse(BaseModel):
+    id: str
+    project_id: str
+    script_id: Optional[str]
+    text: str
+    voice_name: str
+    audio_url: str
+    credits_used: int
+    duration_seconds: int
+
+    class Config:
+        from_attributes = True
