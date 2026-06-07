@@ -40,3 +40,17 @@ class Script(Base):
     language = Column(String, default="ar")
     hashtags = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Audio(Base):
+    __tablename__ = "audios"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    script_id = Column(String, nullable=True, index=True)
+    text = Column(String, nullable=False)
+    voice_name = Column(String, default="arabic_default")
+    audio_url = Column(String, nullable=False)
+    credits_used = Column(Integer, default=1)
+    duration_seconds = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
