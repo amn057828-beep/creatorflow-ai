@@ -101,3 +101,44 @@ def generate_script(
     db.refresh(script)
 
     return script
+
+@router.post("/voice/mock", response_model=AudioResponse)
+def generate_mock_voice(
+    payload: VoiceGenerateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = (
+        db.query(Project)
+        .filter(Project.id == payload.project_id, Project.user_id == current_user.id)
+        .first()
+    )
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    credits_needed = max(1, len(payload.text) // 500)
+
+    if current_user.credits < credits_needed:
+        raise HTTPException(status_code=402, detail="Not enough credits")
+
+    mock_audio_url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+
+    audio = Audio(
+        project_id=payload.project_id,
+        user_id=current_user.id,
+        script_id=payload.script_id,
+        text=payload.text,
+        voice_name=payload.voice_name,
+        audio_url=mock_audio_url,
+        credits_used=credits_needed,
+        duration_seconds=30
+    )
+
+    current_user.credits -= credits_needed
+
+    db.add(audio)
+    db.commit()
+    db.refresh(audio)
+
+    return audio
