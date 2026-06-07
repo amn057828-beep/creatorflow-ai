@@ -43,3 +43,20 @@ class ProjectResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ScriptGenerateRequest(BaseModel):
+    topic: str
+    language: str = "ar"
+    style: str = "educational"
+    duration: int = 60
+
+class ScriptResponse(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    hook: str
+    content: str
+    language: str
+    hashtags: str
+
+    class Config:
+        from_attributes = True
