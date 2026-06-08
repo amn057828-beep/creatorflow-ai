@@ -93,3 +93,25 @@ class AudioResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class VideoRenderRequest(BaseModel):
+    project_id: str
+    script_id: Optional[str] = None
+    audio_id: Optional[str] = None
+    title: str
+    text: str
+    audio_url: str
+
+class VideoResponse(BaseModel):
+    id: str
+    project_id: str
+    script_id: Optional[str]
+    audio_id: Optional[str]
+    title: str
+    video_url: str
+    credits_used: int
+    duration_seconds: int
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
