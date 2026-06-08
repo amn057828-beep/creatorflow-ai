@@ -75,3 +75,17 @@ class Audio(Base):
     project = relationship("Project", back_populates="audios")
     user = relationship("User", back_populates="audios")
     script = relationship("Script", back_populates="audios")
+
+class Video(Base):
+    __tablename__ = "videos"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    script_id = Column(String, ForeignKey("scripts.id"), nullable=True, index=True)
+    audio_id = Column(String, ForeignKey("audios.id"), nullable=True, index=True)
+    title = Column(String, nullable=False)
+    video_url = Column(String, nullable=False)
+    credits_used = Column(Integer, default=2)
+    duration_seconds = Column(Integer, default=30)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
