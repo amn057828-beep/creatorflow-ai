@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
-from app.models import Audio
-from app.schemas import VoiceGenerateRequest, AudioResponse
 
 from app.database import get_db
-from app.models import Project, Script, User
-from app.schemas import ScriptGenerateRequest, ScriptResponse
+from app.models import Project, Script, User, Audio
+from app.schemas import (
+    ScriptGenerateRequest,
+    ScriptResponse,
+    VoiceGenerateRequest,
+    AudioResponse,
+)
 from app.dependencies import get_current_user
 
 
@@ -57,7 +59,7 @@ Follow for more practical content.
         "title": title,
         "hook": hook,
         "content": content,
-        "hashtags": hashtags
+        "hashtags": hashtags,
     }
 
 
@@ -65,26 +67,39 @@ Follow for more practical content.
 def generate_script(
     payload: ScriptGenerateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     generated = generate_script_template(
         topic=payload.topic,
         language=payload.language,
         style=payload.style,
-        duration=payload.duration
+        duration=payload.duration,
     )
 
-    project = Project(
-        user_id=current_user.id,
-        title=generated["title"],
-        type="SCRIPT",
-        status="COMPLETED",
-        description=f"AI generated script about {payload.topic}"
-    )
+    project_id = getattr(payload, "project_id", None)
 
-    db.add(project)
-    db.commit()
-    db.refresh(project)
+    if project_id:
+        project = (
+            db.query(Project)
+            .filter(Project.id == project_id, Project.user_id == current_user.id)
+            .first()
+        )
+
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        project.status = "COMPLETED"
+    else:
+        project = Project(
+            user_id=current_user.id,
+            title=generated["title"],
+            type="SCRIPT",
+            status="COMPLETED",
+            description=f"AI generated script about {payload.topic}",
+        )
+        db.add(project)
+        db.commit()
+        db.refresh(project)
 
     script = Script(
         project_id=project.id,
@@ -93,7 +108,7 @@ def generate_script(
         hook=generated["hook"],
         content=generated["content"],
         language=payload.language,
-        hashtags=generated["hashtags"]
+        hashtags=generated["hashtags"],
     )
 
     db.add(script)
@@ -102,11 +117,12 @@ def generate_script(
 
     return script
 
+
 @router.post("/voice/mock", response_model=AudioResponse)
 def generate_mock_voice(
     payload: VoiceGenerateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     project = (
         db.query(Project)
@@ -116,6 +132,20 @@ def generate_mock_voice(
 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    if payload.script_id:
+        script = (
+            db.query(Script)
+            .filter(
+                Script.id == payload.script_id,
+                Script.project_id == payload.project_id,
+                Script.user_id == current_user.id,
+            )
+            .first()
+        )
+
+        if not script:
+            raise HTTPException(status_code=404, detail="Script not found")
 
     credits_needed = max(1, len(payload.text) // 500)
 
@@ -132,7 +162,7 @@ def generate_mock_voice(
         voice_name=payload.voice_name,
         audio_url=mock_audio_url,
         credits_used=credits_needed,
-        duration_seconds=30
+        duration_seconds=30,
     )
 
     current_user.credits -= credits_needed
