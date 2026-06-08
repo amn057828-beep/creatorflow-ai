@@ -1,13 +1,19 @@
+from typing import Optional
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr
+
 
 class RegisterRequest(BaseModel):
     name: str
     email: EmailStr
     password: str
 
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
 
 class UserResponse(BaseModel):
     id: str
@@ -19,17 +25,18 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
-from typing import Optional
-from datetime import datetime
+
 
 class ProjectCreateRequest(BaseModel):
     title: str
     type: str = "SCRIPT"
     description: Optional[str] = None
+
 
 class ProjectResponse(BaseModel):
     id: str
@@ -43,11 +50,14 @@ class ProjectResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ScriptGenerateRequest(BaseModel):
     topic: str
     language: str = "ar"
     style: str = "educational"
     duration: int = 60
+    project_id: Optional[str] = None
+
 
 class ScriptResponse(BaseModel):
     id: str
@@ -56,16 +66,19 @@ class ScriptResponse(BaseModel):
     hook: str
     content: str
     language: str
-    hashtags: str
+    hashtags: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
 
 class VoiceGenerateRequest(BaseModel):
     project_id: str
     script_id: Optional[str] = None
     text: str
     voice_name: str = "arabic_default"
+
 
 class AudioResponse(BaseModel):
     id: str
@@ -76,6 +89,7 @@ class AudioResponse(BaseModel):
     audio_url: str
     credits_used: int
     duration_seconds: int
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
