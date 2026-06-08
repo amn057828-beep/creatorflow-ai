@@ -10,3 +10,6 @@ python-multipart
 pydantic
 pydantic-settings
 email-validator
+requests
+pillow
+imageio-ffmpeg
