@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 import textwrap
 import subprocess
 import requests
@@ -75,13 +76,101 @@ Follow for more practical content.
     }
 
 
+def generate_script_with_groq(topic: str, language: str, style: str, duration: int):
+    groq_api_key = os.getenv("GROQ_API_KEY")
+
+    if not groq_api_key:
+        return generate_script_template(topic, language, style, duration)
+
+    try:
+        from groq import Groq
+
+        client = Groq(api_key=groq_api_key)
+
+        if language == "en":
+            prompt = f"""
+Create a short social media video script.
+
+Topic: {topic}
+Style: {style}
+Duration: around {duration} seconds
+Language: English
+
+Return ONLY valid JSON with this exact shape:
+{{
+  "title": "short attractive title",
+  "hook": "strong first sentence",
+  "content": "complete video script with short paragraphs",
+  "hashtags": "#hashtag1 #hashtag2 #hashtag3"
+}}
+"""
+        else:
+            prompt = f"""
+اكتب سكربت فيديو قصير لصانع محتوى.
+
+الموضوع: {topic}
+الأسلوب: {style}
+المدة التقريبية: {duration} ثانية
+اللغة: العربية
+
+المطلوب:
+- عنوان جذاب
+- Hook قوي في أول جملة
+- سكربت عملي مناسب لفيديو قصير
+- جمل قصيرة وواضحة
+- خاتمة فيها دعوة للمتابعة أو التفاعل
+- هاشتاقات مناسبة
+
+أعد النتيجة بصيغة JSON فقط، بدون أي شرح خارج JSON، بهذا الشكل:
+{{
+  "title": "عنوان قصير وجذاب",
+  "hook": "جملة افتتاحية قوية",
+  "content": "نص السكربت الكامل",
+  "hashtags": "#هاشتاق1 #هاشتاق2 #هاشتاق3"
+}}
+"""
+
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert short-form video scriptwriter. Always return valid JSON only.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.8,
+            max_tokens=900,
+        )
+
+        raw = completion.choices[0].message.content.strip()
+
+        if raw.startswith("```"):
+            raw = raw.replace("```json", "").replace("```", "").strip()
+
+        data = json.loads(raw)
+
+        return {
+            "title": data.get("title") or f"فيديو عن {topic}",
+            "hook": data.get("hook") or "",
+            "content": data.get("content") or "",
+            "hashtags": data.get("hashtags") or "",
+        }
+
+    except Exception:
+        return generate_script_template(topic, language, style, duration)
+
+
 @router.post("/script", response_model=ScriptResponse)
 def generate_script(
     payload: ScriptGenerateRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    generated = generate_script_template(
+    generated = generate_script_with_groq(
         topic=payload.topic,
         language=payload.language,
         style=payload.style,
@@ -221,7 +310,6 @@ def render_video(
     downloaded_audio_path = f"generated/{file_id}.mp3"
     video_path = f"generated/{file_id}.mp4"
 
-    # Resolve audio source
     if payload.audio_url.startswith("/generated/"):
         local_audio_path = payload.audio_url.replace("/generated/", "generated/", 1)
     elif "/generated/" in payload.audio_url:
@@ -267,22 +355,22 @@ def render_video(
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
 
     command = [
-    ffmpeg,
-    "-y",
-    "-loop", "1",
-    "-framerate", "1",
-    "-i", image_path,
-    "-i", local_audio_path,
-    "-c:v", "libx264",
-    "-preset", "ultrafast",
-    "-tune", "stillimage",
-    "-c:a", "aac",
-    "-b:a", "96k",
-    "-pix_fmt", "yuv420p",
-    "-shortest",
-    "-movflags", "+faststart",
-    video_path,
-]
+        ffmpeg,
+        "-y",
+        "-loop", "1",
+        "-framerate", "1",
+        "-i", image_path,
+        "-i", local_audio_path,
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-tune", "stillimage",
+        "-c:a", "aac",
+        "-b:a", "96k",
+        "-pix_fmt", "yuv420p",
+        "-shortest",
+        "-movflags", "+faststart",
+        video_path,
+    ]
 
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
