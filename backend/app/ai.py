@@ -183,3 +183,104 @@ def generate_mock_voice(
     db.refresh(audio)
 
     return audio
+
+@router.post("/video/render", response_model=VideoResponse)
+def render_video(
+    payload: VideoRenderRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = (
+        db.query(Project)
+        .filter(Project.id == payload.project_id, Project.user_id == current_user.id)
+        .first()
+    )
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    credits_needed = 2
+
+    if current_user.credits < credits_needed:
+        raise HTTPException(status_code=402, detail="Not enough credits")
+
+    os.makedirs("generated", exist_ok=True)
+
+    file_id = str(uuid.uuid4())
+    image_path = f"generated/{file_id}.png"
+    audio_path = f"generated/{file_id}.mp3"
+    video_path = f"generated/{file_id}.mp4"
+
+    # Download audio
+    audio_response = requests.get(payload.audio_url, timeout=30)
+    if audio_response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to download audio")
+
+    with open(audio_path, "wb") as f:
+        f.write(audio_response.content)
+
+    # Create background image
+    width, height = 1280, 720
+    image = Image.new("RGB", (width, height), color=(15, 23, 42))
+    draw = ImageDraw.Draw(image)
+
+    try:
+        font_title = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            56
+        )
+        font_text = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            34
+        )
+    except Exception:
+        font_title = ImageFont.load_default()
+        font_text = ImageFont.load_default()
+
+    title = payload.title[:80]
+    wrapped_text = "\n".join(textwrap.wrap(payload.text[:500], width=45))
+
+    draw.text((80, 80), title, fill=(255, 255, 255), font=font_title)
+    draw.text((80, 200), wrapped_text, fill=(203, 213, 225), font=font_text)
+
+    image.save(image_path)
+
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+
+    command = [
+        ffmpeg,
+        "-y",
+        "-loop", "1",
+        "-i", image_path,
+        "-i", audio_path,
+        "-c:v", "libx264",
+        "-tune", "stillimage",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-pix_fmt", "yuv420p",
+        "-shortest",
+        video_path,
+    ]
+
+    subprocess.run(command, check=True)
+
+    public_url = f"/generated/{file_id}.mp4"
+
+    video = Video(
+        project_id=payload.project_id,
+        user_id=current_user.id,
+        script_id=payload.script_id,
+        audio_id=payload.audio_id,
+        title=payload.title,
+        video_url=public_url,
+        credits_used=credits_needed,
+        duration_seconds=30,
+    )
+
+    current_user.credits -= credits_needed
+
+    db.add(video)
+    db.commit()
+    db.refresh(video)
+
+    return video
