@@ -29,22 +29,12 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 
 
 def generate_script_template(topic: str, language: str, style: str, duration: int):
-    if language == "en":
-        title = f"How to understand {topic} in a simple way"
-        hook = f"Have you ever wondered why {topic} matters today?"
-        content = f"Have you ever wondered why {topic} has become so important?\n\nIn this short video, we will explain the idea in a simple and practical way.\n\nFirst, {topic} is not just a trend. It is a real opportunity.\n\nSecond, start small and improve step by step.\n\nThird, focus on your unique value.\n\nFollow for more."
-        hashtags = "#content #business #creator #ai"
-    else:
-        title = f"كيف تفهم {topic} بطريقة بسيطة"
-        hook = f"هل تساءلت يوماً لماذا أصبح موضوع {topic} مهماً لهذه الدرجة؟"
-        content = f"هل تساءلت يوماً لماذا أصبح موضوع {topic} مهماً لهذه الدرجة؟\n\nفي هذا الفيديو القصير، سنشرح الفكرة بطريقة بسيطة وعملية.\n\nأولاً، {topic} ليس مجرد ترند عابر.\n\nثانياً، ابدأ بخطوات صغيرة وطوّر نفسك.\n\nثالثاً، ركز على القيمة التي تقدمها.\n\nتابعنا للمزيد من الأفكار."
-        hashtags = "#صناعة_المحتوى #ذكاء_اصطناعي #تسويق #مشاريع"
-
+    # تم الإبقاء على القالب كخيار احتياطي
     return {
-        "title": title,
-        "hook": hook,
-        "content": content,
-        "hashtags": hashtags,
+        "title": f"تأملات في {topic}",
+        "hook": f"ما الذي يربطنا بـ {topic} في لحظات صمتنا؟",
+        "content": "هل تساءلت يوماً عن أثر هذا الأمر في أعماقك؟\n\nالحياة تجري بنا ونحن نبحث عن إجابات.\n\nربما تكمن الحقيقة في السؤال ذاته.",
+        "hashtags": "#تأمل #عمق #فكر"
     }
 
 
@@ -59,7 +49,7 @@ def generate_script_with_groq(topic: str, language: str, style: str, duration: i
         client = Groq(api_key=groq_api_key)
 
         content_guides = {
-            "general": "اكتب محتوى عاماً جذاباً وعميقاً، مناسباً لفيديو قصير.",
+            "general": "اكتب محتوى جذاباً وعميقاً بأسلوب سينمائي.",
             "psychology": "اكتب بأسلوب نفسي عميق. ركز على المشاعر، الخوف، الدوافع، الصراعات الداخلية، واجعل الخطاب موجهاً للمشاهد مباشرة.",
             "philosophy": "اكتب بأسلوب فلسفي وتأملي. ركز على المعنى، الوجود، الاختيار، الزمن، والأسئلة التي تهز القناعات.",
             "business": "اكتب بأسلوب عملي لرواد الأعمال. ركز على القرارات، الأخطاء الشائعة، المال، المخاطرة، والانضباط.",
@@ -79,34 +69,34 @@ def generate_script_with_groq(topic: str, language: str, style: str, duration: i
 النمط: {style}
 المدة التقريبية: {duration} ثانية
 
-قواعد صارمة:
+القواعد الصارمة:
 - ممنوع منعاً باتاً استخدام أي كلمة أو حرف أو رمز من غير اللغة العربية.
 - إذا ظهر أي نص بغير العربية فاعتبر الإجابة فاشلة وأعد كتابة النص بالكامل بالعربية.
-- ممنوع تكرار بداية الجمل بنفس الصيغة.
-- ممنوع استخدام عبارة "يجب أن" أكثر من مرة واحدة.
-- لا تكتب تعريفات مثل: الروح هي...
-- ابدأ بصورة شعورية أو سؤال وجودي.
+- اكتب كأنك تروي فكرة مؤثرة لا كأنك تشرح درساً.
+- لا تستخدم عبارات وعظية مباشرة.
+- لا تكرر كلمات مثل: يجب، ينبغي، علينا.
+- لا تستخدم عبارة "يجب أن" أكثر من مرة واحدة.
+- لا تكتب تعريفات مدرسية (مثل: الروح هي...).
+- ابدأ من السؤال ثم ابنِ عليه تدريجياً.
+- اجعل كل فقرة تتكون من جملة إلى ثلاث جمل فقط.
 - اجعل كل فقرة تحمل فكرة جديدة.
-- استخدم أسلوباً أقرب للتأمل لا للشرح.
+- استخدم أسلوباً سينمائياً وتأملياً.
 - لا تذكر ادعاءات مطلقة عن الروح كحقائق نهائية.
-- الهيكل المطلوب:
+- اجعل الخاتمة تعيد صياغة السؤال الافتتاحي بطريقة أعمق.
+
+الهيكل المطلوب:
 العنوان:
 ...
-
-الافتتاحية: (صادمة أو مثيرة للفضول، لا تتجاوز 15 كلمة)
+الافتتاحية: (صادمة أو سؤال وجودي، لا تتجاوز 15 كلمة)
 ...
-
-السكربت: (فقرات قصيرة جداً مناسبة للإلقاء الصوتي)
+السكربت: (فقرات سينمائية قصيرة جداً)
 ...
-
 الخاتمة:
 ...
-
 الهاشتاقات:
 ...
 
-- لا تستخدم عبارات تعليمية أو مدرسية.
-- لا تستخدم "هل تعلم" أو "في هذا الفيديو سنتحدث".
+- لا تستخدم عبارات تعليمية أو "هل تعلم" أو "في هذا الفيديو".
 - لا تستخدم تعداداً نقطياً.
 
 أعد النتيجة بصيغة JSON فقط، بدون Markdown وبدون شرح، بهذا الشكل:
@@ -121,7 +111,7 @@ def generate_script_with_groq(topic: str, language: str, style: str, duration: i
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "أنت كاتب محتوى عربي محترف. التزم بالعربية فقط في كل حرف."},
+                {"role": "system", "content": "أنت كاتب محتوى عربي مبدع. التزم بالعربية الفصحى في كل حرف."},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.7,
@@ -141,10 +131,7 @@ def generate_script_with_groq(topic: str, language: str, style: str, duration: i
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"GROQ ERROR: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"GROQ ERROR: {str(e)}")
 
 @router.post("/script", response_model=ScriptResponse)
 def generate_script(
