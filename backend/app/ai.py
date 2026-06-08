@@ -32,40 +32,12 @@ def generate_script_template(topic: str, language: str, style: str, duration: in
     if language == "en":
         title = f"How to understand {topic} in a simple way"
         hook = f"Have you ever wondered why {topic} matters today?"
-        content = f"""
-Have you ever wondered why {topic} has become so important?
-
-In this short video, we will explain the idea in a simple and practical way.
-
-First, {topic} is not just a trend. It is a real opportunity for people who want to learn, grow, and create value.
-
-Second, the best way to benefit from it is to start small. Learn the basics, test simple ideas, and improve step by step.
-
-Third, avoid copying others blindly. Focus on your audience, your message, and the problem you are solving.
-
-In conclusion, {topic} can become a powerful tool if you use it with clarity, patience, and consistency.
-
-Follow for more practical content.
-""".strip()
+        content = f"Have you ever wondered why {topic} has become so important?\n\nIn this short video, we will explain the idea in a simple and practical way.\n\nFirst, {topic} is not just a trend. It is a real opportunity.\n\nSecond, start small and improve step by step.\n\nThird, focus on your unique value.\n\nFollow for more."
         hashtags = "#content #business #creator #ai"
     else:
         title = f"كيف تفهم {topic} بطريقة بسيطة"
         hook = f"هل تساءلت يوماً لماذا أصبح موضوع {topic} مهماً لهذه الدرجة؟"
-        content = f"""
-هل تساءلت يوماً لماذا أصبح موضوع {topic} مهماً لهذه الدرجة؟
-
-في هذا الفيديو القصير، سنشرح الفكرة بطريقة بسيطة وعملية.
-
-أولاً، {topic} ليس مجرد ترند عابر، بل فرصة حقيقية لكل شخص يريد أن يتعلم أو يطور نفسه أو يصنع محتوى مفيداً.
-
-ثانياً، أفضل طريقة للاستفادة من {topic} هي أن تبدأ بخطوات صغيرة. لا تنتظر أن تعرف كل شيء، ابدأ بالتجربة، ثم طوّر نفسك مع الوقت.
-
-ثالثاً، لا تقلد الآخرين بشكل أعمى. حاول أن تفهم جمهورك، وتعرف ما المشكلة التي تريد حلها، وما القيمة التي ستقدمها لهم.
-
-وفي النهاية، تذكر أن النجاح لا يأتي من الفكرة وحدها، بل من الاستمرار، والتجربة، وتحسين المحتوى يوماً بعد يوم.
-
-تابعنا للمزيد من الأفكار العملية.
-""".strip()
+        content = f"هل تساءلت يوماً لماذا أصبح موضوع {topic} مهماً لهذه الدرجة؟\n\nفي هذا الفيديو القصير، سنشرح الفكرة بطريقة بسيطة وعملية.\n\nأولاً، {topic} ليس مجرد ترند عابر.\n\nثانياً، ابدأ بخطوات صغيرة وطوّر نفسك.\n\nثالثاً، ركز على القيمة التي تقدمها.\n\nتابعنا للمزيد من الأفكار."
         hashtags = "#صناعة_المحتوى #ذكاء_اصطناعي #تسويق #مشاريع"
 
     return {
@@ -76,7 +48,7 @@ Follow for more practical content.
     }
 
 
-def generate_script_with_groq(topic: str, language: str, style: str, duration: int):
+def generate_script_with_groq(topic: str, language: str, style: str, duration: int, content_type: str = "general"):
     groq_api_key = os.getenv("GROQ_API_KEY")
 
     if not groq_api_key:
@@ -84,33 +56,21 @@ def generate_script_with_groq(topic: str, language: str, style: str, duration: i
 
     try:
         from groq import Groq
-
         client = Groq(api_key=groq_api_key)
 
-        if language == "en":
-            prompt = f"""
-Create a short social media video script.
-
-Topic: {topic}
-Style: {style}
-Duration: around {duration} seconds
-Language: English
-
-Return ONLY valid JSON with this exact shape:
-{{
-  "title": "short attractive title",
-  "hook": "strong first sentence",
-  "content": "complete video script with short paragraphs",
-  "hashtags": "#hashtag1 #hashtag2 #hashtag3"
-}}
-"""
-        else:
-            prompt = f"""
-أنت كاتب سكربتات عربي محترف لصناع المحتوى.
+        prompt = f"""
+أنت أفضل كاتب محتوى عربي لفيديوهات Shorts وReels.
 
 الموضوع: {topic}
+نوع المحتوى: {content_type}
 النمط: {style}
 المدة التقريبية: {duration} ثانية
+
+توجيهات الكتابة:
+- إذا كان الموضوع نفسياً أو فلسفياً: اكتب بأسلوب عميق وتأملي، اجعل المشاهد يشعر أن الكلام موجه إليه شخصياً، واستخدم أسئلة تهز القناعات، ولا تقدم تعريفات مدرسية.
+- إذا كان الموضوع مالياً: ركز على القرارات والأخطاء الشائعة.
+- إذا كان الموضوع تقنياً: استخدم أمثلة واقعية.
+- إذا كان الموضوع دينياً أو روحياً: ركز على المعاني والقيم والسلوك الإنساني.
 
 قواعد صارمة:
 - ممنوع منعاً باتاً استخدام أي كلمة أو حرف أو رمز من غير اللغة العربية.
@@ -119,10 +79,10 @@ Return ONLY valid JSON with this exact shape:
 العنوان:
 ...
 
-الافتتاحية:
+الافتتاحية: (صادمة أو مثيرة للفضول، لا تتجاوز 15 كلمة)
 ...
 
-السكربت:
+السكربت: (فقرات قصيرة جداً مناسبة للإلقاء الصوتي)
 ...
 
 الخاتمة:
@@ -131,8 +91,6 @@ Return ONLY valid JSON with this exact shape:
 الهاشتاقات:
 ...
 
-- الافتتاحية: لا تتجاوز 15 كلمة وتكون صادمة أو مثيرة للفضول.
-- السكربت: فقرات قصيرة جداً مناسبة للإلقاء الصوتي.
 - لا تستخدم عبارات تعليمية أو مدرسية.
 - لا تستخدم "هل تعلم" أو "في هذا الفيديو سنتحدث".
 - لا تستخدم تعداداً نقطياً.
@@ -149,26 +107,18 @@ Return ONLY valid JSON with this exact shape:
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {
-                    "role": "system", 
-                    "content": "أنت كاتب محتوى عربي محترف. التزم بالعربية فقط في كل حرف."
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
+                {"role": "system", "content": "أنت كاتب محتوى عربي محترف. التزم بالعربية فقط في كل حرف."},
+                {"role": "user", "content": prompt},
             ],
             temperature=0.7,
             max_tokens=1400,
         )
 
         raw = completion.choices[0].message.content.strip()
-
         if raw.startswith("```"):
             raw = raw.replace("```json", "").replace("```", "").strip()
 
         data = json.loads(raw)
-
         return {
             "title": data.get("title") or f"فيديو عن {topic}",
             "hook": data.get("hook") or "",
@@ -177,8 +127,10 @@ Return ONLY valid JSON with this exact shape:
         }
 
     except Exception as e:
-        print("GROQ ERROR:", str(e))
-    return generate_script_template(topic, language, style, duration)
+        raise HTTPException(
+            status_code=500,
+            detail=f"GROQ ERROR: {str(e)}"
+        )
 
 @router.post("/script", response_model=ScriptResponse)
 def generate_script(
@@ -186,25 +138,20 @@ def generate_script(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    content_type = getattr(payload, "content_type", "general")
     generated = generate_script_with_groq(
         topic=payload.topic,
         language=payload.language,
         style=payload.style,
         duration=payload.duration,
+        content_type=content_type
     )
 
     project_id = getattr(payload, "project_id", None)
-
     if project_id:
-        project = (
-            db.query(Project)
-            .filter(Project.id == project_id, Project.user_id == current_user.id)
-            .first()
-        )
-
+        project = db.query(Project).filter(Project.id == project_id, Project.user_id == current_user.id).first()
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-
         project.status = "COMPLETED"
     else:
         project = Project(
@@ -231,7 +178,6 @@ def generate_script(
     db.add(script)
     db.commit()
     db.refresh(script)
-
     return script
 
 
@@ -241,25 +187,17 @@ async def generate_mock_voice(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id == payload.project_id, Project.user_id == current_user.id)
-        .first()
-    )
-
+    project = db.query(Project).filter(Project.id == payload.project_id, Project.user_id == current_user.id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
     credits_needed = max(1, len(payload.text) // 500)
-
     if current_user.credits < credits_needed:
         raise HTTPException(status_code=402, detail="Not enough credits")
 
     os.makedirs("generated", exist_ok=True)
-
     file_id = str(uuid.uuid4())
     audio_path = f"generated/{file_id}.mp3"
-
     voice_map = {
         "arabic_default": "ar-SA-HamedNeural",
         "arabic_male": "ar-SA-HamedNeural",
@@ -267,17 +205,9 @@ async def generate_mock_voice(
         "english_male": "en-US-GuyNeural",
         "english_female": "en-US-JennyNeural",
     }
-
     selected_voice = voice_map.get(payload.voice_name, "ar-SA-HamedNeural")
-
-    communicate = edge_tts.Communicate(
-        text=payload.text,
-        voice=selected_voice,
-    )
-
+    communicate = edge_tts.Communicate(text=payload.text, voice=selected_voice)
     await communicate.save(audio_path)
-
-    audio_url = f"/generated/{file_id}.mp3"
 
     audio = Audio(
         project_id=payload.project_id,
@@ -285,17 +215,14 @@ async def generate_mock_voice(
         script_id=payload.script_id,
         text=payload.text,
         voice_name=payload.voice_name,
-        audio_url=audio_url,
+        audio_url=f"/generated/{file_id}.mp3",
         credits_used=credits_needed,
         duration_seconds=30,
     )
-
     current_user.credits -= credits_needed
-
     db.add(audio)
     db.commit()
     db.refresh(audio)
-
     return audio
 
 
@@ -305,22 +232,15 @@ def render_video(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id == payload.project_id, Project.user_id == current_user.id)
-        .first()
-    )
-
+    project = db.query(Project).filter(Project.id == payload.project_id, Project.user_id == current_user.id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
     credits_needed = 2
-
     if current_user.credits < credits_needed:
         raise HTTPException(status_code=402, detail="Not enough credits")
 
     os.makedirs("generated", exist_ok=True)
-
     file_id = str(uuid.uuid4())
     image_path = f"generated/{file_id}.png"
     downloaded_audio_path = f"generated/{file_id}.mp3"
@@ -328,75 +248,27 @@ def render_video(
 
     if payload.audio_url.startswith("/generated/"):
         local_audio_path = payload.audio_url.replace("/generated/", "generated/", 1)
-    elif "/generated/" in payload.audio_url:
-        local_audio_path = "generated/" + payload.audio_url.split("/generated/")[-1]
     else:
         audio_response = requests.get(payload.audio_url, timeout=30)
         if audio_response.status_code != 200:
             raise HTTPException(status_code=400, detail="Failed to download audio")
-
         with open(downloaded_audio_path, "wb") as f:
             f.write(audio_response.content)
-
         local_audio_path = downloaded_audio_path
 
-    if not os.path.exists(local_audio_path):
-        raise HTTPException(status_code=400, detail="Audio file not found on server")
-
-    width, height = 854, 480
-    image = Image.new("RGB", (width, height), color=(15, 23, 42))
+    image = Image.new("RGB", (854, 480), color=(15, 23, 42))
     draw = ImageDraw.Draw(image)
-
-    try:
-        font_title = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            56,
-        )
-        font_text = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            34,
-        )
-    except Exception:
-        font_title = ImageFont.load_default()
-        font_text = ImageFont.load_default()
-
-    title = payload.title[:80]
     wrapped_text = "\n".join(textwrap.wrap(payload.text[:500], width=45))
-
-    draw.text((80, 80), title, fill=(255, 255, 255), font=font_title)
-    draw.text((80, 200), wrapped_text, fill=(203, 213, 225), font=font_text)
-
+    draw.text((80, 80), payload.title[:80], fill=(255, 255, 255))
+    draw.text((80, 200), wrapped_text, fill=(203, 213, 225))
     image.save(image_path)
 
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
-
-    command = [
-        ffmpeg,
-        "-y",
-        "-loop", "1",
-        "-framerate", "1",
-        "-i", image_path,
-        "-i", local_audio_path,
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-tune", "stillimage",
-        "-c:a", "aac",
-        "-b:a", "96k",
-        "-pix_fmt", "yuv420p",
-        "-shortest",
-        "-movflags", "+faststart",
-        video_path,
-    ]
-
+    command = [ffmpeg, "-y", "-loop", "1", "-framerate", "1", "-i", image_path, "-i", local_audio_path, "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage", "-c:a", "aac", "-b:a", "96k", "-pix_fmt", "yuv420p", "-shortest", "-movflags", "+faststart", video_path]
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"FFmpeg failed: {exc.stderr[-1000:]}",
-        )
-
-    public_url = f"/generated/{file_id}.mp4"
+        raise HTTPException(status_code=500, detail=f"FFmpeg failed: {exc.stderr[-1000:]}")
 
     video = Video(
         project_id=payload.project_id,
@@ -404,15 +276,12 @@ def render_video(
         script_id=payload.script_id,
         audio_id=payload.audio_id,
         title=payload.title,
-        video_url=public_url,
+        video_url=f"/generated/{file_id}.mp4",
         credits_used=credits_needed,
         duration_seconds=30,
     )
-
     current_user.credits -= credits_needed
-
     db.add(video)
     db.commit()
     db.refresh(video)
-
     return video
