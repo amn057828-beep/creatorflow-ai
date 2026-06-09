@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Project, Script, User, Audio, Video
+from app.models import Project, Script, User, Audio, Video, Scene
 from app.schemas import (
     ScriptGenerateRequest,
     ScriptResponse,
@@ -21,6 +21,8 @@ from app.schemas import (
     AudioResponse,
     VideoRenderRequest,
     VideoResponse,
+    SceneGenerateRequest,
+    SceneResponse,
 )
 from app.dependencies import get_current_user
 
@@ -288,6 +290,7 @@ def render_video(
     db.commit()
     db.refresh(video)
     return video
+
 
 @router.post("/scenes/generate", response_model=list[SceneResponse])
 def generate_scenes(
