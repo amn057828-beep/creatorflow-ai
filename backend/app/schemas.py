@@ -2,6 +2,16 @@ from typing import Optional
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
+from app.schemas import (
+    ScriptGenerateRequest,
+    ScriptResponse,
+    VoiceGenerateRequest,
+    AudioResponse,
+    VideoRenderRequest,
+    VideoResponse,
+    SceneGenerateRequest,
+    SceneResponse,
+)
 
 
 class RegisterRequest(BaseModel):
